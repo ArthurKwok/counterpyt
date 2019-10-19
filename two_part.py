@@ -64,11 +64,8 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species, prob_
     for p in pitch_list:
         if p.name in dissonant_pitches:
             pitch_name_avoid.append(p.nameWithOctave)
-    # pitch_name_avoid.append(current_cf.transpose('m2').pitch.nameWithOctave)
-    # pitch_name_avoid.append(current_cf.transpose('M2').pitch.nameWithOctave)
-    # pitch_name_avoid.append(current_cf.transpose('P4').pitch.nameWithOctave)
-    # pitch_name_avoid.append(current_cf.transpose('m7').pitch.nameWithOctave)
-    # pitch_name_avoid.append(current_cf.transpose('M7').pitch.nameWithOctave)
+
+    # rules for down beats
     if down_beat:
         last_cf = current_cf.previous()
         # PPI from upbeat to downbeat
@@ -90,6 +87,7 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species, prob_
             pitch_name_avoid.append(current_cf.transpose('P5').nameWithOctave)
         elif inte.name == 'P8':
             pitch_name_avoid.append(current_cf.transpose('P8').nameWithOctave)
+    # rules for up beats
     else:
         # upbeat's last cf is the current cf
         last_cf = current_cf
@@ -115,27 +113,10 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species, prob_
     interval_p = interval_p / np.sum(interval_p)
     if debug:
         print('probabilities: {}'.format(np.around(interval_p, decimals=3)))
-    current_note = note.Note(pitch=pitch.Pitch(np.random.choice(pitch_name_valid, p=interval_p)), quaterLength=current_cf.quarterLength / species)
+    current_note = note.Note(pitch=np.random.choice(pitch_name_valid, p=interval_p))
+    current_note.quarterLength = (current_cf.quarterLength / species)
     # current_note = note.Note(pitch=np.random.choice(pitch_name_valid), quaterLength= current_cf.quarterLength / species)
     return current_note
-
-
-def generate_cf(key='C', time_siganture='2/4', cf_type='bass', measures=8):
-    """
-    Automatically generate a canctus firmus.
-
-    Parameters
-    ----------
-    key: str
-        the key of cf
-    time_signature: str
-        the time signature, also decides the duration of cf.
-    cf_type: str
-        'bass' or 'soprano'.
-    mesures: int
-        the number of measure to generate.
-    """
-    pass
 
 
 def write_two_part(cf, cf_type='bass', species=1, show=False):
@@ -193,7 +174,7 @@ def write_two_part(cf, cf_type='bass', species=1, show=False):
                     # soprano.append(note.Note(pitch=np.random.choice(soprano_pitches), quarterLength=species_length))
                     down_beat = (True if i == 0 else False)
                     soprano.append(random_nextnote(soprano_pitches, soprano.flat.notes[-1],
-                     current_bass, down_beat, species, prob_factor=2))
+                     current_bass, down_beat, species, prob_factor=2, debug=True))
     s.insert(0, soprano)
     s.insert(0, bass)
 
@@ -216,4 +197,4 @@ if __name__ == "__main__":
         note.Note("Eb3", type='half')
     ])
 
-    result = write_two_part(cf=cf, cf_type='bass', species=2, show=True)
+    result = write_two_part(cf=cf, cf_type='bass', species=4, show=True)

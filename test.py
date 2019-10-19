@@ -12,7 +12,8 @@ cf.append([
     note.Note("F3", type='half'),
     note.Note("Eb4", type='half')
 ])
-
-n1 = note.Note('C3')
-n2 = note.Note('G6')
-print(interval.Interval(n1, n2).semiSimpleName)
+species = 1
+current_cf = note.Note('C3', quarterLength=2.0)
+current_note = note.Note(pitch='G3')
+current_note.quarterLength = (current_cf.quarterLength/species)
+print(current_note.quarterLength)
