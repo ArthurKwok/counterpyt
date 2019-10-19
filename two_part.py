@@ -71,7 +71,7 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species):
         # PPI from last downbeat to downbeat
         # get the last downbeat
         last_db = last_note
-        for i in range(species-1):
+        for _ in range(species-1):
             if type(last_db.previous()) == note.Note:
                 last_db = last_db.previous()
         
@@ -98,7 +98,7 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species):
     # calculate the distance of interval to the last note, and sort
     interval_to_rf = [np.abs(interval.Interval(last_note.pitch, pitch.Pitch(p)).semitones) for p in pitch_name_valid]
     interval_to_rf_sorted = np.argsort(interval_to_rf)
-    current_note = note.Note(pitch=pitch_name_valid[interval_to_rf_sorted[0], quaterLength= current_cf.quarterLength / species)
+    current_note = note.Note(pitch=pitch_name_valid[interval_to_rf_sorted[0]], quaterLength=current_cf.quarterLength / species)
     # current_note = note.Note(pitch=np.random.choice(pitch_name_valid), quaterLength= current_cf.quarterLength / species)
     return current_note
 
