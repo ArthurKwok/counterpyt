@@ -24,7 +24,7 @@ def scale_degree_to_pitch(scale_in, degree, range):
     pass
 
 
-def random_nextnote(pitch_list, last_note, current_cf, down_beat, species):
+def random_nextnote(pitch_list, last_note, current_cf, down_beat, species, prob_factor=2, debug=False):
     """
     Randomly generate the next note according to the previous notes.
 
@@ -40,6 +40,10 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species):
         whether the current note is down beat. affects the choise of interval.
     species: int
         the species of counterpoint
+    prob_factor: int
+        affects the probability factor of choosing pitches
+    debug: bool
+        if debug=True, print some process.
     Returns
     -------
     current_note: note.Note
@@ -55,18 +59,24 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species):
     # avoid same note
     pitch_name_avoid.append(last_note.pitch.nameWithOctave)
     # Avoid dissonants
-    pitch_name_avoid.append(current_cf.transpose('m2').pitch.nameWithOctave)
-    pitch_name_avoid.append(current_cf.transpose('M2').pitch.nameWithOctave)
-    pitch_name_avoid.append(current_cf.transpose('P4').pitch.nameWithOctave)
-    pitch_name_avoid.append(current_cf.transpose('m7').pitch.nameWithOctave)
-    pitch_name_avoid.append(current_cf.transpose('M7').pitch.nameWithOctave)
+    dissonant_intervals = ['m2', 'M2', 'P4', 'A4', 'D5', 'm7', 'M7']
+    dissonant_pitches = [current_cf.transpose(interval).pitch.name for interval in dissonant_intervals]
+    for p in pitch_list:
+        if p.name in dissonant_pitches:
+            pitch_name_avoid.append(p.nameWithOctave)
+    # pitch_name_avoid.append(current_cf.transpose('m2').pitch.nameWithOctave)
+    # pitch_name_avoid.append(current_cf.transpose('M2').pitch.nameWithOctave)
+    # pitch_name_avoid.append(current_cf.transpose('P4').pitch.nameWithOctave)
+    # pitch_name_avoid.append(current_cf.transpose('m7').pitch.nameWithOctave)
+    # pitch_name_avoid.append(current_cf.transpose('M7').pitch.nameWithOctave)
     if down_beat:
         last_cf = current_cf.previous()
         # PPI from upbeat to downbeat
-        if interval.Interval(last_cf, last_note).name == 'P5':
-            pitch_name_avoid.append(current_cf.transpose('P5').nameWithOctave)
-        elif interval.Interval(last_cf, last_note).name == 'P8':
-            pitch_name_avoid.append(current_cf.transpose('P8').nameWithOctave)
+        inte = interval.Interval(last_cf, last_note) 
+        if inte.semiSimpleName == 'P5':
+            pitch_name_avoid.append(current_cf.transpose(inte).nameWithOctave)
+        elif inte.semiSimpleName == 'P8':
+            pitch_name_avoid.append(current_cf.transpose(inte).nameWithOctave)
 
         # PPI from last downbeat to downbeat
         # get the last downbeat
@@ -95,10 +105,17 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species):
         # if no valid pitch, return None
         print('No valid pitch! Stucked!')
         return None
-    # calculate the distance of interval to the last note, and sort
-    interval_to_rf = [np.abs(interval.Interval(last_note.pitch, pitch.Pitch(p)).semitones) for p in pitch_name_valid]
-    interval_to_rf_sorted = np.argsort(interval_to_rf)
-    current_note = note.Note(pitch=pitch_name_valid[interval_to_rf_sorted[0]], quaterLength=current_cf.quarterLength / species)
+    # calculate the distance of interval to the last note
+    interval_to_rf = np.array([np.abs(interval.Interval(last_note.pitch, pitch.Pitch(p)).semitones) for p in pitch_name_valid])
+    if debug:
+        print('intervals: {}'.format(np.around(interval_to_rf, decimals=3)))
+    # generate a probability function according to the intervals. smaller interval has bigger probability.
+    interval_p = 1 / interval_to_rf
+    interval_p = interval_p ** prob_factor
+    interval_p = interval_p / np.sum(interval_p)
+    if debug:
+        print('probabilities: {}'.format(np.around(interval_p, decimals=3)))
+    current_note = note.Note(pitch=pitch.Pitch(np.random.choice(pitch_name_valid, p=interval_p)), quaterLength=current_cf.quarterLength / species)
     # current_note = note.Note(pitch=np.random.choice(pitch_name_valid), quaterLength= current_cf.quarterLength / species)
     return current_note
 
@@ -146,11 +163,11 @@ def write_two_part(cf, cf_type='bass', species=1, show=False):
 
     s = stream.Stream([cf.keySignature, cf.timeSignature])
     if cf_type == 'bass':
-        soprano = stream.Part([cf.keySignature, cf.timeSignature])
-        bass = stream.Part(cf.flat.elements)
+        soprano = stream.Part([cf.keySignature, cf.timeSignature], id='soprano')
+        bass = stream.Part(cf.flat.elements, id='bass')
     elif cf_type == 'soprano':
-        bass = stream.Part([cf.keySignature, cf.timeSignature])
-        soprano = stream.Part(cf.flat.elements)
+        bass = stream.Part([cf.keySignature, cf.timeSignature], id='bass')
+        soprano = stream.Part(cf.flat.elements, id='soprano')
 
     # decide the duration by species
     species_length = bass.notes[0].quarterLength / species
@@ -176,7 +193,7 @@ def write_two_part(cf, cf_type='bass', species=1, show=False):
                     # soprano.append(note.Note(pitch=np.random.choice(soprano_pitches), quarterLength=species_length))
                     down_beat = (True if i == 0 else False)
                     soprano.append(random_nextnote(soprano_pitches, soprano.flat.notes[-1],
-                     current_bass, down_beat, species))
+                     current_bass, down_beat, species, prob_factor=2))
     s.insert(0, soprano)
     s.insert(0, bass)
 

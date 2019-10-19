@@ -13,6 +13,6 @@ cf.append([
     note.Note("Eb4", type='half')
 ])
 
-
-note_list = cf.flat.notes
-print(note_list[-1].nameWithOctave)
+n1 = note.Note('C3')
+n2 = note.Note('G6')
+print(interval.Interval(n1, n2).semiSimpleName)
