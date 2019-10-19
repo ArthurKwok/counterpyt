@@ -98,9 +98,10 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species):
     # calculate the distance of interval to the last note, and sort
     interval_to_rf = [np.abs(interval.Interval(last_note.pitch, pitch.Pitch(p)).semitones) for p in pitch_name_valid]
     interval_to_rf_sorted = np.argsort(interval_to_rf)
-    current_note = note.Note(pitch=pitch_name_valid[interval_to_rf_sorted[0]], quaterLength= current_cf.quarterLength / species)
+    current_note = note.Note(pitch=pitch_name_valid[interval_to_rf_sorted[0], quaterLength= current_cf.quarterLength / species)
     # current_note = note.Note(pitch=np.random.choice(pitch_name_valid), quaterLength= current_cf.quarterLength / species)
     return current_note
+
 
 def generate_cf(key='C', time_siganture='2/4', cf_type='bass', measures=8):
     """
