@@ -1,5 +1,10 @@
-from music21 import note, pitch, corpus, stream, key, clef, meter
+from music21 import *
 import numpy as np
+
+us = environment.UserSettings()
+us['musicxmlPath'] = '/usr/bin/musescore'
+us['musescoreDirectPNGPath'] = '/usr/bin/musescore'
+
 s = stream.Score(id='main score')
 
 key_and_time = [key.Key('F'), meter.TimeSignature('3/4')]
@@ -16,3 +21,4 @@ for pitch in ['C', 'D', 'E', 'F', 'G']:
 
 s.append([soprano, bass])
 s.show()
+

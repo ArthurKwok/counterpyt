@@ -24,7 +24,8 @@ def scale_degree_to_pitch(scale_in, degree, range):
     pass
 
 
-def random_nextnote(pitch_list, last_note, current_cf, down_beat, species, prob_factor=2, debug=False):
+def random_nextnote(pitch_list, last_note, current_cf, down_beat,
+                     species, prob_factor=2, debug=False):
     """
     Randomly generate the next note according to the previous notes.
 
@@ -37,7 +38,8 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat, species, prob_
     current_cf: note.Note
         the current canctus firmus note
     down_beat: bool
-        whether the current note is down beat. affects the choise of interval.
+        whether the current note is down beat. affects 
+        the choise of interval.
     species: int
         the species of counterpoint
     prob_factor: int
@@ -164,7 +166,8 @@ def write_two_part(cf, cf_type='bass', species=1, show=False):
         for current_bass in bass.flat.notes:
             if not type(current_bass.previous()) == note.Note:
                 # The first note must be tonic
-                soprano.append(note.Note(pitch=np.random.choice(soprano_tonic_pitches), quarterLength=species_length*species))
+                soprano.append(note.Rest(quarterLength=species_length))
+                soprano.append(note.Note(pitch=np.random.choice(soprano_tonic_pitches), quarterLength=species_length))
             elif not current_bass.next():
                 # The last note must be tonic
                 soprano.append(note.Note(pitch=np.random.choice(soprano_tonic_pitches), quarterLength=species_length*species))
@@ -197,4 +200,6 @@ if __name__ == "__main__":
         note.Note("Eb3", type='half')
     ])
 
-    result = write_two_part(cf=cf, cf_type='bass', species=4, show=True)
+    result = write_two_part(cf=cf, cf_type='bass', species=2, show=False)
+    result.write('musicxml', './output/result.xml')
+    result.write('midi', './output/result.midi')
