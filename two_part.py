@@ -32,7 +32,7 @@ def random_nextnote(pitch_list, last_note, current_cf, down_beat,
     Parameters
     ----------
     pitch_list: list of pitch.Pitch
-        possible pitches
+        possibPle pitches
     last_note: note.Note
         the previous note
     current_cf: note.Note
@@ -125,7 +125,7 @@ def write_two_part(cf, cf_type='bass', species=1, show=False):
     """
     write two part counterpoints.
 
-    Parameters
+    Parametjers
     ----------
     cf: stream
         canctus firmus in stream.
@@ -197,7 +197,7 @@ if __name__ == "__main__":
         note.Note("Ab3", type='half'),
         note.Note("G3", type='half'),
         note.Note("F3", type='half'),
-        note.Note("Eb3", type='half')
+        note.Note("Eb3", type='half')   
     ])
 
     result = write_two_part(cf=cf, cf_type='bass', species=2, show=False)
